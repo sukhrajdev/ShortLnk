@@ -1,0 +1,28 @@
+{
+  "name": "project-50",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/server.js",
+    "scripts": {
+    "server": "nodemon ./src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "express": "^5.2.1",
+    "nodemon": "^3.1.11",
+    "prisma": "^7.2.0"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.3",
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^7.0.12",
+    "pg": "^8.17.1"
+  }
+}
