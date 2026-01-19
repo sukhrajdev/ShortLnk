@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma.js";
 import { sendVerificationEmail } from "../services/email/sendVerificationEmail.js";
-import { generateToken } from "../utils/generateToken.js";
+import { generateRefreshToken,generateAccessToken } from "../utils/generateToken.js";
+import { sendWelcomeEmail } from "../services/email/sendWelcomeEmail.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -41,10 +42,10 @@ export async function registerUser(req, res) {
           success: false,
         message: "User is already register.",
     });
-}
-const salt = await bcrypt.genSalt(12);
-const hashed_password = await bcrypt.hash(password, salt);
-const createdUser = await prisma.user.create({
+    }
+    const salt = await bcrypt.genSalt(12);
+    const hashed_password = await bcrypt.hash(password, salt);
+    const createdUser = await prisma.user.create({
     data: {
         username,
         email,
@@ -56,22 +57,23 @@ const createdUser = await prisma.user.create({
         isVerified: true,
         id:true,
     },
-});
-const authToken = jwt.sign(
+    });
+    const authToken = jwt.sign(
     {
         id: createdUser.id,
     },
     process.env.AUTH_TOKEN_SECRET,
     { expiresIn: process.env.AUTH_TOKEN_EXPIRY }
-);
+    );
 // Send verification email
-await sendVerificationEmail(createdUser.email, authToken, createdUser.username);
-  
-return res.status(201).json({
-    success: false,
+    await sendVerificationEmail(createdUser.email, authToken, createdUser.username);
+    await sendWelcomeEmail(createdUser.email, createdUser.username);
+
+    return res.status(201).json({
+    success: true,
     message: "User created Successful Please verify your email.",
     data: createdUser,
-});
+    });
 } catch (err) {
     return res.status(500).json({
         success: false,
@@ -103,7 +105,7 @@ export async function loginUser(req, res) {
             isVerified: true
         },
     });
-    if (user.length == 0) {
+    if (!user) {
         return res.status(400).json({
             success: false,
             message: "User not in database.",
@@ -122,8 +124,10 @@ export async function loginUser(req, res) {
             message: "User is not verified.Please! Checkout your email",
         });
     }
-    let refreshToken,
-    accessToken = generateToken(user.id);
+
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+
     await prisma.user.update({
         where: {
             id: user.id,
@@ -135,7 +139,6 @@ export async function loginUser(req, res) {
     const isProd = process.env.NODE_ENV === "production";
     return res
       .status(200)
-      .header("Authorization", `Bearer ${accessToken}`)
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: isProd,
@@ -146,6 +149,14 @@ export async function loginUser(req, res) {
       .json({
         success: true,
         message: "Login Successful",
+        accessToken,
+        data: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            links: user.links,
+            isVerified: user.isVerified,
+        }
       });
   } catch (err) {
     return res.status(500).json({
@@ -158,40 +169,40 @@ export async function loginUser(req, res) {
 
 export async function logoutUser(req, res) {
   try {
-    if (!req.user?.id) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
+    const refreshToken = req.cookies.refreshToken;
+
+    // 1. If no refresh token, user is already logged out
+    if (!refreshToken) {
+      return res.status(204).send();
     }
 
-    await prisma.user.update({
-      where: { id: req.user.id },
+    // 2. Remove refresh token from DB
+    await prisma.user.updateMany({
+      where: { refreshToken },
       data: { refreshToken: null },
     });
 
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-    };
-
+    // 3. Clear cookie
     return res
+      .clearCookie("refreshToken", {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+      })
       .status(200)
-      .clearheader("Authorization")
-      .clearCookie("refreshToken", cookieOptions)
       .json({
         success: true,
-        message: "Logout successful",
+        message: "Logged out successfully",
       });
-  } catch (err) {
+
+  } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error",
+      message: "Logout failed",
     });
   }
 }
+
 
 export async function refreshToken(req,res){
     try{
@@ -213,13 +224,10 @@ export async function refreshToken(req,res){
                 message:"Unauthorized",
             });
         }
-        const newAccessToken = generateToken(user.id);
-        return res.status(200).cookie("accessToken",newAccessToken,{
-            httpOnly:true,
-            secure:process.env.NODE_ENV==="production",
-            sameSite:"strict",
-        }).json({
+        const newAccessToken = generateAccessToken(user.id);
+        return res.status(200).json({
             success:true,
+            accessToken: newAccessToken,
             message:"Access token refreshed successfully",
         });
     }catch(err){
@@ -233,16 +241,10 @@ export async function refreshToken(req,res){
 
 export async function resendVerificationEmail(req,res){
     try{
-        const {email} = req.body;
-        if(!email){
-            return res.status(400).json({
-                success:false,
-                message:"Email is required",
-            });
-        }
-        const user = await prisma.user.findUnique({
+        const {id} = req.user.id;
+        const user = await prisma.user.findFirst({
             where:{
-                email,
+                id: id
             },
         });
         if(!user){
@@ -259,7 +261,7 @@ export async function resendVerificationEmail(req,res){
         }
         const authToken = jwt.sign(
     {
-        id: createdUser.id,
+        id: user.id,
     },
     process.env.AUTH_TOKEN_SECRET,
     { expiresIn: process.env.AUTH_TOKEN_EXPIRY }
@@ -270,6 +272,55 @@ await sendVerificationEmail(user.email, authToken, user.username);
         return res.status(200).json({
             success:true,
             message:"Verification email sent successfully",
+        });
+    }catch(err){
+        return res.status(500).json({
+            success:false,
+            message:"Internal Server Error",
+            error:err.message,
+        })
+    }
+}
+
+export async function verifyEmail(req,res){
+    try{
+        const {token} = req.query;
+        if(!token){
+            return res.status(400).json({
+                success:false,
+                message:"Link is invalid or expired",
+            })
+        }
+        const decoded = jwt.verify(token,process.env.AUTH_TOKEN_SECRET);
+        const {id} = decoded;
+        const user = await prisma.user.findFirst({
+            where:{
+                id: id
+            },
+        });
+        if(!user){
+            return res.status(404).json({
+                success:false,
+                message:"User not found",
+            });
+        }
+        if(user.isVerified){
+            return res.status(400).json({
+                success:false,
+                message:"User is already verified",
+            });
+        }
+        await prisma.user.update({
+            where:{
+                id:user.id,
+            },
+            data:{
+                isVerified:true,
+            },
+        });
+        return res.status(200).json({
+            success:true,
+            message:"Email verified successfully",
         });
     }catch(err){
         return res.status(500).json({

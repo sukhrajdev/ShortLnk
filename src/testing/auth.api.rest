@@ -17,3 +17,43 @@ Content-Type: application/json
     "email": "sukhrajgamer0@gmail.com",
     "password": "Sukhraj123"
 }
+
+### Logout User
+
+POST http://localhost:3000/api/auth/logout
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg4MzI0NTQsImV4cCI6MTc2OTI2NDQ1NH0.ohqJQfjOVrmtaVvMB6VifEOiX7ib_OQ_uuP8GC4BDj4
+Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg4MzIyNDMsImV4cCI6MTc2OTY5NjI0M30.dYqRTx-w1q-qYE9Anj3eR_NmwjC71LwR_8vl0GIlsFg; Max-Age=864000; Path=/; Expires=Thu, 29 Jan 2026 14:17:23 GMT; HttpOnly; SameSite=Strict
+
+{
+    
+}
+
+### Refresh Token
+POST http://localhost:3000/api/auth/refresh-token
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg4MzI1OTAsImV4cCI6MTc2OTI2NDU5MH0.C_R4uhr-4cz-kz-QePnH5oYTrJrQGB8FJTc_Z5JjqFs
+Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg4MzIyNDMsImV4cCI6MTc2OTY5NjI0M30.dYqRTx-w1q-qYE9Anj3eR_NmwjC71LwR_8vl0GIlsFg; Max-Age=864000; Path=/; Expires=Thu, 29 Jan 2026 14:17:23 GMT; HttpOnly; SameSite=Strict
+
+{
+}
+
+### Resend Verification Email
+POST http://localhost:3000/api/auth/resend-verification-email
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg4MzI2NjgsImV4cCI6MTc2OTI2NDY2OH0._ZQxjPOtQlvJhDDzI_rG_JFqArqN4L1Fj5C2JLv0w_4
+
+{
+}
+### Verify Email
+GET http://localhost:3000/verify-email?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg4MzM1MDUsImV4cCI6MTc2ODgzNDQwNX0.xDkVoiAmphPy93c3qiqPseysLsUpQDXcmu3tEn3sOn4
+
+
+### Create Link
+POST http://localhost:3000/api/links
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg4MzU0MTMsImV4cCI6MTc2OTI2NzQxM30.LwHW5fivdQgtafwJg8mUeY-qHDAZi97ISjrczwRgoj4
+
+{
+  "originalUrl": "https://www.example.com/some/very/long/url"
+}

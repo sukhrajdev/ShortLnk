@@ -1,6 +1,9 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import router from "./routes/auth.routes.js";
+import authRouter from "./routes/auth.routes.js";
+import userRouter from "./routes/user.routes.js";
+import linkRouter from "./routes/links.routes.js";
+import { verifyEmail } from "./controllers/auth.controller.js";
 import "dotenv/config";
 
 const app = express()
@@ -8,8 +11,12 @@ const port = process.env.PORT || 3000
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
-app.use("/api/auth", router)
+app.use("/api/auth", authRouter)
+app.use("/api/users", userRouter)
+app.use("/api/links", linkRouter)
 
+app.get("/verify-email", verifyEmail)
+    
 app.get("/", (req, res) => {
     res.json({
         message: "Welcome to ShortLnk Backend API",

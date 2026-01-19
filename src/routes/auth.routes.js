@@ -1,21 +1,30 @@
 import express from 'express';
-import { loginUser, registerUser, logoutUser,refreshToken,resendVerificationEmail } from '../controllers/auth.controller.js';
+import { loginUser, 
+    registerUser, 
+    logoutUser,
+    refreshToken,
+    resendVerificationEmail,
+    verifyEmail
+ } from '../controllers/auth.controller.js';
 import { VerifyJwt } from '../middlewares/auth.middleware.js';
 
-const router = express.Router();
+const authRouter = express.Router();
 
 // Route for user registration
-router.post('/register', registerUser);
+authRouter.post('/register', registerUser);
 
 // Route for user login
-router.post('/login', loginUser);
+authRouter.post('/login', loginUser);
 
 // Route for user logout
-router.post('/logout', VerifyJwt, logoutUser);
+authRouter.post('/logout', VerifyJwt, logoutUser);
 
 // Route for refreshing tokens
-router.post('/refresh-token',VerifyJwt, refreshToken);
+authRouter.post('/refresh-token',VerifyJwt, refreshToken);
 
 // Route for resending verification email
-router.post('/resend-verification-email', VerifyJwt, resendVerificationEmail);
-export default router;
+authRouter.post('/resend-verification-email', VerifyJwt, resendVerificationEmail);
+
+// Route for verifying email
+authRouter.get('/verify-email', verifyEmail);
+export default authRouter;
