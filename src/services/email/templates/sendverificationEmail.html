@@ -1,14 +1,3 @@
-import nodemailer from 'nodemailer';
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "me@gmail.com",
-    pass: process.env.GOOGLE_APP_PASSWORD, // The 16-character App Password
-  },
-});
-
-const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,26 +62,8 @@ const htmlContent = `
             <p>Best regards,<br>The Team</p>
         </div>
         <div class="footer">
-            <p>&copy; 2026 SHORTLNK. All rights reserved.</p>
+            <p>&copy; 2024 Your Company. All rights reserved.</p>
         </div>
     </div>
 </body>
 </html>
-`
-export async function sendVerificationEmail(to, Token,username) {
-    try{
-        const verificationLink = `http://localhost:3000/verify-email?token=${Token}`;
-        const newHtmlContent = htmlContent.replace("{{verificationLink}}", verificationLink).replace("{{username}}", username);
-        const mailOptions = {
-        from: "SHORTLNKR <shortlnkr@support.com>",
-        to,
-        subject: "Please verify your email address",
-        html: newHtmlContent,
-    };
-    
-    await transporter.sendMail(mailOptions);
-    console.log("Verification email sent successfully");
-    }catch(error){
-        console.error("Error sending verification email:", error);
-    }
-};

@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { sendVerificationEmail } from "../services/email/sendVerificationEmail.js";
 import { generateToken } from "../utils/generateToken.js";
 import bcrypt from "bcrypt";
 
@@ -61,20 +62,14 @@ const authToken = jwt.sign(
         id: createdUser.id,
     },
     process.env.AUTH_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
+    { expiresIn: process.env.AUTH_TOKEN_EXPIRY }
 );
-
-await prisma.user.findUnique({
-    where: {
-        email,
-    },
-    data: {
-        authToken,
-    },
-});
+// Send verification email
+await sendVerificationEmail(createdUser.email, authToken, createdUser.username);
+  
 return res.status(201).json({
     success: false,
-    message: "User created Successful",
+    message: "User created Successful Please verify your email.",
     data: createdUser,
 });
 } catch (err) {
@@ -202,3 +197,89 @@ export async function logoutUser(req, res) {
   }
 }
 
+export async function refreshToken(req,res){
+    try{
+        const existingRefreshToken = req.cookies.refreshToken;
+        if(!existingRefreshToken){
+            return res.status(401).json({
+                success:false,
+                message:"Unauthorized",
+            });
+        }
+        const user = await prisma.user.findFirst({
+            where:{
+                refreshToken:existingRefreshToken,
+            },
+        });
+        if(!user){
+            return res.status(401).json({
+                success:false,
+                message:"Unauthorized",
+            });
+        }
+        const newAccessToken = generateToken(user.id);
+        return res.status(200).cookie("accessToken",newAccessToken,{
+            httpOnly:true,
+            secure:process.env.NODE_ENV==="production",
+            sameSite:"strict",
+        }).json({
+            success:true,
+            message:"Access token refreshed successfully",
+        });
+    }catch(err){
+        return res.status(500).json({
+            success:false,
+            message:"Internal Server Error",
+            error:err.message,
+        })
+    }
+}
+
+export async function resendVerificationEmail(req,res){
+    try{
+        const {email} = req.body;
+        if(!email){
+            return res.status(400).json({
+                success:false,
+                message:"Email is required",
+            });
+        }
+        const user = await prisma.user.findUnique({
+            where:{
+                email,
+            },
+        });
+        if(!user){
+            return res.status(404).json({
+                success:false,
+                message:"User not found",
+            });
+        }
+        if(user.isVerified){
+            return res.status(400).json({
+                success:false,
+                message:"User is already verified",
+            });
+        }
+        const authToken = jwt.sign(
+    {
+        id: createdUser.id,
+    },
+    process.env.AUTH_TOKEN_SECRET,
+    { expiresIn: process.env.AUTH_TOKEN_EXPIRY }
+);
+// Send verification email
+await sendVerificationEmail(user.email, authToken, user.username);
+  
+        return res.status(200).json({
+            success:true,
+            message:"Verification email sent successfully",
+        });
+    }catch(err){
+        return res.status(500).json({
+            success:false,
+            message:"Internal Server Error",
+            error:err.message,
+        })
+    }
+}
