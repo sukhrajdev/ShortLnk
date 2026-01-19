@@ -1,6 +1,7 @@
-import { prisma } from "../config/prisma";
+import { prisma } from "../config/prisma.js";
 import { sendVerificationEmail } from "../services/email/sendVerificationEmail.js";
 import { generateToken } from "../utils/generateToken.js";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 export async function registerUser(req, res) {
@@ -30,7 +31,7 @@ export async function registerUser(req, res) {
                 message: "password is too Weak.",
             });
         }
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
             where: {
                 email,
             },
@@ -42,7 +43,7 @@ export async function registerUser(req, res) {
     });
 }
 const salt = await bcrypt.genSalt(12);
-const hashed_password = await bcrypt.hash(password);
+const hashed_password = await bcrypt.hash(password, salt);
 const createdUser = await prisma.user.create({
     data: {
         username,
@@ -50,11 +51,10 @@ const createdUser = await prisma.user.create({
         password: hashed_password,
     },
     select: {
-        id,
-        username,
-        email,
-        links,
-        isVerified,
+        username:true,
+        email:true,
+        isVerified: true,
+        id:true,
     },
 });
 const authToken = jwt.sign(
@@ -95,10 +95,12 @@ export async function loginUser(req, res) {
             email,
         },
         select: {
-            username,
-            email,
-            links,
-            isVerified,
+            id: true,
+            username: true,
+            password: true,
+            email: true,
+            links: true,
+            isVerified: true
         },
     });
     if (user.length == 0) {
@@ -133,13 +135,7 @@ export async function loginUser(req, res) {
     const isProd = process.env.NODE_ENV === "production";
     return res
       .status(200)
-      .cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: "strict",
-        path: "/",
-        maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
-      })
+      .header("Authorization", `Bearer ${accessToken}`)
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: isProd,
@@ -183,7 +179,7 @@ export async function logoutUser(req, res) {
 
     return res
       .status(200)
-      .clearCookie("accessToken", cookieOptions)
+      .clearheader("Authorization")
       .clearCookie("refreshToken", cookieOptions)
       .json({
         success: true,

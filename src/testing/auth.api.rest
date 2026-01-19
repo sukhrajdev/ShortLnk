@@ -1,0 +1,19 @@
+### Register
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "sukhrajgamer",
+  "email": "sukhrajgamer0@gmail.com",
+  "password": "Sukhraj123"
+}
+
+### Login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "sukhrajgamer",
+    "email": "sukhrajgamer0@gmail.com",
+    "password": "Sukhraj123"
+}
