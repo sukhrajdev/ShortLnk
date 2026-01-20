@@ -7,9 +7,6 @@ const linkRouter = express.Router();
 // Route for creating a new link
 linkRouter.post('/', VerifyJwt, createLink);
 
-// Route for retrieving a link by its code
-linkRouter.get('/:LinkCode', getLink);
-
 // Route for retrieving all links for a user
 linkRouter.get('/', VerifyJwt, getAllLinks);
 

@@ -45,13 +45,18 @@ export async function createLink(req, res) {
         }
         const newLink = await prisma.link.create({
             data: {
-                id,
+                userId: id,
                 originalLink,
                 linkCode
             },
         });
 
-        cache.set(linkCode, newLink);
+        cache.set(linkCode, {
+            originalLink: newLink.originalLink,
+            userId: newLink.userId,
+            createdAt: newLink.createdAt,
+            updatedAt: newLink.updatedAt,
+        });
 
         return res.status(201).json({
             success: true,
@@ -74,7 +79,7 @@ export async function getLink(req,res){
             const cachedLink = cache.get(LinkCode);
             return res.redirect(cachedLink.originalLink);
         }
-        const link = await prisma.link.findUnique({
+        const link = await prisma.link.findFirst({
             where: { linkCode: LinkCode },
         })
         if(!link){
@@ -104,7 +109,16 @@ export async function getAllLinks(req,res){
             });
         }
         const links = await prisma.link.findMany({
-            where: { id: id },
+            where: { userId: id },
+            select: {
+                originalLink: true,
+                linkCode: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
         })
         return res.status(200).json({
             success: true,
@@ -124,7 +138,7 @@ export async function deleteLink(req,res){
     try{
         const {LinkCode} = req.params;
         const {id} = req.user;
-        const link = await prisma.link.findUnique({
+        const link = await prisma.link.findFirst({
             where: { linkCode: LinkCode },
         })
         if(!link){
@@ -133,7 +147,7 @@ export async function deleteLink(req,res){
                 message: "Link not found",
             })
         }
-        if(link.id !== id){
+        if(link.userId !== id){
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to delete this link",
@@ -170,7 +184,7 @@ export async function updateLink(req,res){
                 message: "Link not found",
             })
         }
-        if(link.id !== id){
+        if(link.userId !== id){
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to update this link",
@@ -181,7 +195,12 @@ export async function updateLink(req,res){
             data: { originalLink },
         })
         cache.del(LinkCode);
-        cache.set(LinkCode, updatedLink);
+        cache.set(LinkCode, {
+            originalLink: updatedLink.originalLink,
+            userId: updatedLink.userId,
+            createdAt: updatedLink.createdAt,
+            updatedAt: updatedLink.updatedAt,
+        });
         return res.status(200).json({
             success: true,
             data: updatedLink,

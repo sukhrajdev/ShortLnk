@@ -3448,16 +3448,16 @@ export namespace Prisma {
 
   export type linkWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    linkCode?: string
     AND?: linkWhereInput | linkWhereInput[]
     OR?: linkWhereInput[]
     NOT?: linkWhereInput | linkWhereInput[]
-    linkCode?: StringFilter<"link"> | string
     originalLink?: StringFilter<"link"> | string
     userId?: StringFilter<"link"> | string
     createdAt?: DateTimeFilter<"link"> | Date | string
     updatedAt?: DateTimeFilter<"link"> | Date | string
     user?: XOR<UserScalarRelationFilter, userWhereInput>
-  }, "id">
+  }, "id" | "linkCode">
 
   export type linkOrderByWithAggregationInput = {
     id?: SortOrder
@@ -3573,7 +3573,7 @@ export namespace Prisma {
 
   export type linkCreateInput = {
     id?: string
-    linkCode?: string
+    linkCode: string
     originalLink: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -3582,7 +3582,7 @@ export namespace Prisma {
 
   export type linkUncheckedCreateInput = {
     id?: string
-    linkCode?: string
+    linkCode: string
     originalLink: string
     userId: string
     createdAt?: Date | string
@@ -3609,7 +3609,7 @@ export namespace Prisma {
 
   export type linkCreateManyInput = {
     id?: string
-    linkCode?: string
+    linkCode: string
     originalLink: string
     userId: string
     createdAt?: Date | string
@@ -4086,7 +4086,7 @@ export namespace Prisma {
 
   export type linkCreateWithoutUserInput = {
     id?: string
-    linkCode?: string
+    linkCode: string
     originalLink: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -4094,7 +4094,7 @@ export namespace Prisma {
 
   export type linkUncheckedCreateWithoutUserInput = {
     id?: string
-    linkCode?: string
+    linkCode: string
     originalLink: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -4204,7 +4204,7 @@ export namespace Prisma {
 
   export type linkCreateManyUserInput = {
     id?: string
-    linkCode?: string
+    linkCode: string
     originalLink: string
     createdAt?: Date | string
     updatedAt?: Date | string

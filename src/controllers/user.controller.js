@@ -1,16 +1,18 @@
 import { prisma } from "../config/prisma.js";
+import bcrypt from "bcrypt";
 
 export async function updateUser(req,res){
     try{
         const {id} = req.params;
-        const {name, email} = req.body;
+        console.log("User ID to update:", id);
+        const {username, email} = req.body;
         if(!id){
             return res.status(400).json({
                 success:false,
                 message:"User ID is required",
             })
         }
-        if(!name && !email){
+        if(!username && !email){
             return res.status(400).json({
                 success:false,
                 message:"Atleast one field is required to update",
@@ -24,11 +26,20 @@ export async function updateUser(req,res){
         }
         const user = await prisma.user.update({
             where:{
-                id: parseInt(id),
+                id: id,
             },
             data: {
-                name: name,
+                username: username,
                 email: email,
+            },
+            select: {
+                id:true,
+                username:true,
+                email:true,
+                links:true,
+                isVerified:true,
+                createdAt:true,
+                updatedAt:true
             }
         })
         return res.status(200).json({
@@ -56,7 +67,7 @@ export async function deleteUser(req,res){
         }
         await prisma.user.delete({
             where:{
-                id: parseInt(id),
+                id: id
             }
         })
         return res.status(200).json({
@@ -145,7 +156,7 @@ export async function getUser(req,res){
         }
         const user = await prisma.user.findUnique({
             where:{
-                id: parseInt(id),
+                id: id,
             },
             select: {
                 id:true,

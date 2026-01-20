@@ -4,6 +4,7 @@ import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
 import linkRouter from "./routes/links.routes.js";
 import { verifyEmail } from "./controllers/auth.controller.js";
+import { getLink } from "./controllers/link.controller.js";
 import "dotenv/config";
 
 const app = express()
@@ -14,6 +15,9 @@ app.use(cookieParser())
 app.use("/api/auth", authRouter)
 app.use("/api/users", userRouter)
 app.use("/api/links", linkRouter)
+
+// Route for retrieving a link by its code
+app.get('/:LinkCode', getLink);
 
 app.get("/verify-email", verifyEmail)
     

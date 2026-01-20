@@ -1,0 +1,29 @@
+
+PUT http://localhost:3000/api/users/cmkl3848t0000r29n5zf6imag
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg5MDYwMTMsImV4cCI6MTc2OTMzODAxM30.vVzV9cqDHkXRxfXlW3ogFIAlPv3iqVcByc3L3AezhwQ
+
+{
+  "username": "Sukhraj Singh",
+  "email": "testing@gmail.com"
+}
+
+### GET User Info
+
+GET http://localhost:3000/api/users/cmkl3848t0000r29n5zf6imag
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg5MDYwMTMsImV4cCI6MTc2OTMzODAxM30.vVzV9cqDHkXRxfXlW3ogFIAlPv3iqVcByc3L3AezhwQ
+
+
+### Forget Password
+POST http://localhost:3000/api/users/forget-password
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg5MDYwMTMsImV4cCI6MTc2OTMzODAxM30.vVzV9cqDHkXRxfXlW3ogFIAlPv3iqVcByc3L3AezhwQ
+Content-Type: application/json
+
+{
+    "oldPassword": "Sukhraj123",
+    "newPassword": "newpassword123"
+}
+
+### Delete User
+DELETE http://localhost:3000/api/users/cmkl3848t0000r29n5zf6imag
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg5MDYwMTMsImV4cCI6MTc2OTMzODAxM30.vVzV9cqDHkXRxfXlW3ogFIAlPv3iqVcByc3L3AezhwQ
