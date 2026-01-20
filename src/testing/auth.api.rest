@@ -52,8 +52,8 @@ GET http://localhost:3000/verify-email?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ
 ### Create Link
 POST http://localhost:3000/api/links
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg4MzU0MTMsImV4cCI6MTc2OTI2NzQxM30.LwHW5fivdQgtafwJg8mUeY-qHDAZi97ISjrczwRgoj4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNta2wzODQ4dDAwMDByMjluNXpmNmltYWciLCJpYXQiOjE3Njg5MDYwMTMsImV4cCI6MTc2OTMzODAxM30.vVzV9cqDHkXRxfXlW3ogFIAlPv3iqVcByc3L3AezhwQ
 
 {
-  "originalUrl": "https://www.example.com/some/very/long/url"
+  "originalLink": "https://www.example.com/some/very/long/url"
 }

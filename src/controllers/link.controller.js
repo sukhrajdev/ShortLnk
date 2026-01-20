@@ -1,9 +1,19 @@
 import { prisma } from "../config/prisma.js";
+import "node-cache";
 import { generateShortCode } from "../utils/generateShortCode.js";
+import NodeCache from "node-cache";
+
+const cache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
 
 export async function createLink(req, res) {
     try {
         const {id} = req.user;
+        if(!id){
+            return res.status(400).json({
+                success: false,
+                message: "User ID is required",
+            });
+        }
         const { originalLink } = req.body;
         if(!originalLink){
             return  res.status(400).json({
@@ -41,6 +51,8 @@ export async function createLink(req, res) {
             },
         });
 
+        cache.set(linkCode, newLink);
+
         return res.status(201).json({
             success: true,
             data: newLink,
@@ -55,3 +67,131 @@ export async function createLink(req, res) {
     }
 }
 
+export async function getLink(req,res){
+    try{
+        const {LinkCode} = req.params;
+        if(cache.has(LinkCode)){
+            const cachedLink = cache.get(LinkCode);
+            return res.redirect(cachedLink.originalLink);
+        }
+        const link = await prisma.link.findUnique({
+            where: { linkCode: LinkCode },
+        })
+        if(!link){
+            return res.status(404).json({
+                success: false,
+                message: "Link not found",
+            })
+        }
+        cache.set(LinkCode, link);
+        res.redirect(link.originalLink);
+    }catch(err){
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: err.message,
+        });
+    }
+}
+
+export async function getAllLinks(req,res){
+    try{
+        const {id} = req.user;
+        if(!id){
+            return res.status(400).json({
+                success: false,
+                message: "User ID is required",
+            });
+        }
+        const links = await prisma.link.findMany({
+            where: { id: id },
+        })
+        return res.status(200).json({
+            success: true,
+            data: links,
+            message: "Links retrieved successfully",
+        });
+    }catch(err){
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: err.message,
+        });
+    }
+}
+
+export async function deleteLink(req,res){
+    try{
+        const {LinkCode} = req.params;
+        const {id} = req.user;
+        const link = await prisma.link.findUnique({
+            where: { linkCode: LinkCode },
+        })
+        if(!link){
+            return res.status(404).json({
+                success: false,
+                message: "Link not found",
+            })
+        }
+        if(link.id !== id){
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized to delete this link",
+            })
+        }
+        await prisma.link.delete({
+            where: { linkCode: LinkCode },
+        })
+        cache.del(LinkCode);
+        return res.status(200).json({
+            success: true,
+            message: "Link deleted successfully",
+        });
+    }catch(err){
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: err.message,
+        });
+    }
+}
+
+export async function updateLink(req,res){
+    try{
+        const {LinkCode} = req.params;
+        const {id} = req.user;
+        const { originalLink } = req.body;
+        const link = await prisma.link.findUnique({
+            where: { linkCode: LinkCode },
+        })
+        if(!link){
+            return res.status(404).json({
+                success: false,
+                message: "Link not found",
+            })
+        }
+        if(link.id !== id){
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized to update this link",
+            })
+        }
+        const updatedLink = await prisma.link.update({
+            where: { linkCode: LinkCode },
+            data: { originalLink },
+        })
+        cache.del(LinkCode);
+        cache.set(LinkCode, updatedLink);
+        return res.status(200).json({
+            success: true,
+            data: updatedLink,
+            message: "Link updated successfully",
+        });
+    }catch(err){
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: err.message,
+        });
+    }
+}
